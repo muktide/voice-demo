@@ -1,0 +1,55 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  imageName: voice-demo
+
+steps:
+
+# Checkout Source Code
+- checkout: self
+
+# Install Java 17
+- task: JavaToolInstaller@0
+  displayName: 'Install Java 17'
+  inputs:
+    versionSpec: '17'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+
+# Maven Build
+- task: Maven@4
+  displayName: 'Maven Clean Package'
+  inputs:
+    mavenPomFile: 'pom.xml'
+    goals: 'clean package'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/*.xml'
+
+# Verify JAR
+- script: |
+    echo "Listing target folder..."
+    ls -la target
+  displayName: 'Verify JAR Creation'
+
+# Locate Dockerfile
+- script: |
+    echo "Current Directory"
+    pwd
+    echo "Project Files"
+    ls -la
+  displayName: 'Verify Dockerfile Exists'
+
+# Docker Build
+- task: Docker@2
+  displayName: 'Build Docker Image'
+  inputs:
+    command: 'build'
+    Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+    repository: 'voice-demo'
+    tags: |
+      latest
+      $(Build.BuildId)
