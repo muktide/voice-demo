@@ -8,12 +8,13 @@ import org.springframework.web.bind.annotation.*;
 public class HomeController {
     @GetMapping("/")
     public String home() {
-        System.out.println("Display Home Page...........");
+        System.out.println("Inside Home Page...........");
         return "home";
     }
 
     @PostMapping("/display")
     public String display(@RequestParam String message, Model model) {
+        System.out.println("Inside Display Page...........");
         model.addAttribute("originalMessage", message);
         model.addAttribute("decodedMessage", "Good: " + message);
         return "display";
